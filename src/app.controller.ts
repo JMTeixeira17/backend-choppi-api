@@ -11,16 +11,4 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('/health')
-  @ApiResponse({
-    status: 200,
-    description: 'OK',
-  })
-  check() {
-    return {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      service: 'Choppi API',
-    };
-  }
 }
