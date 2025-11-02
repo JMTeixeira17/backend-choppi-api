@@ -70,8 +70,8 @@ npm install
 -- Habilitar extensión UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Tabla Users
-CREATE TABLE users (
+-- Tabla User
+CREATE TABLE user (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE users (
 );
 
 -- Tabla Stores
-CREATE TABLE stores (
+CREATE TABLE store (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     address TEXT NOT NULL,
@@ -91,13 +91,13 @@ CREATE TABLE stores (
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
     is_active BOOLEAN DEFAULT true,
-    created_by UUID REFERENCES users(id),
+    created_by UUID REFERENCES user(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla Products
-CREATE TABLE products (
+-- Tabla Product
+CREATE TABLE product (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -107,16 +107,16 @@ CREATE TABLE products (
     category VARCHAR(100),
     image_url TEXT,
     is_active BOOLEAN DEFAULT true,
-    store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+    store_id UUID NOT NULL REFERENCES store(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Índices para mejor performance
-CREATE INDEX idx_stores_active ON stores(is_active);
-CREATE INDEX idx_products_store ON products(store_id);
-CREATE INDEX idx_products_active ON products(is_active);
-CREATE INDEX idx_products_sku ON products(sku);
+CREATE INDEX idx_stores_active ON store(is_active);
+CREATE INDEX idx_products_store ON product(store_id);
+CREATE INDEX idx_products_active ON product(is_active);
+CREATE INDEX idx_products_sku ON product(sku);
 ```
 
 ---
@@ -135,7 +135,7 @@ DB_DATABASE=postgres
 DB_SSL=true
 
 # JWT
-JWT_SECRET=tu-super-secret-jwt-key-change-in-production
+JWT_SECRET=jwt-secret
 JWT_EXPIRES_IN=24h
 
 # App
@@ -560,7 +560,7 @@ La API incluye documentación interactiva generada automáticamente con Swagger.
 
 ```
 ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
-│    Users    │         │   Stores    │         │  Products   │
+│    User     │         │   Store     │         │  Product    │
 ├─────────────┤         ├─────────────┤         ├─────────────┤
 │ id (PK)     │────┐    │ id (PK)     │────┐    │ id (PK)     │
 │ email       │    └───>│ created_by  │    └───>│ store_id    │
@@ -576,8 +576,8 @@ La API incluye documentación interactiva generada automáticamente con Swagger.
 
 ### Relaciones:
 
-- **Users → Stores**: Un usuario puede crear múltiples stores (1:N)
-- **Stores → Products**: Una tienda tiene múltiples productos (1:N)
+- **User → Store**: Un usuario puede crear múltiples stores (1:N)
+- **Store → Product**: Una tienda tiene múltiples productos (1:N)
 - **Soft Deletes**: Todas las entidades usan `is_active` flag
 
 ---
