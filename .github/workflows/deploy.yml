@@ -3,10 +3,10 @@ name: Deploy API to AWS ECS (Continuous Deployment)
 on:
   push:
     branches:
-      - main
+      - main # Despliegue automático en cada push a la rama principal
 
 env:
-
+  # REEMPLAZA ESTOS VALORES CON TUS RECURSOS REALES DE AWS
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: backend-choppi-repo
   ECS_CLUSTER: choppi-api-cluster
@@ -22,6 +22,10 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+      
+    # -----------------------------------------------
+    # PASO 1: Configurar AWS y ECR Login
+    # -----------------------------------------------
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -33,26 +37,38 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
+    # -----------------------------------------------
+    # PASO 2: Construir y Subir la Imagen a ECR
+    # -----------------------------------------------
     - name: Build, tag, and push image to ECR
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        # Usamos tu Dockerfile para construir la imagen
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        # Subir la imagen
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        # Exportar la imagen completa para el siguiente paso
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-    - name: Download existing Task Definition JSON
+        
+    # -----------------------------------------------
+    # PASO 3: Despliegue en ECS
+    # -----------------------------------------------
+    - name: Download and Clean Task Definition JSON
+      id: download-task-def
       run: |
-        aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION_NAME }} --query taskDefinition > task-definition.json
+        # 1. Descarga la definición completa.
+        aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION_NAME }} --query taskDefinition > task-definition-full.json
+        
+        # 2. Limpia el JSON: Excluye claves que AWS rechaza al registrar una nueva revisión.
+        # Incluye 'enableFaultInjection' y las claves administrativas estándar.
+        cat task-definition-full.json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .deregisteredAt, .registeredBy, .enableFaultInjection, .externalVolumeConfigurations, .inferenceAccelerators)' > task-definition.json
+        
     - name: Render new image into Task Definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: task-definition.json
+        # Usa el archivo limpio 'task-definition.json'
+        task-definition: task-definition.json 
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
 
