@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
+import { Store } from '../stores/entities/store.entity';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @Injectable()
@@ -14,9 +15,21 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
+    @InjectRepository(Store)
+    private storesRepository: Repository<Store>,
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
+    const store = await this.storesRepository.findOne({
+      where: { id: createProductDto.storeId, isActive: true },
+    });
+
+    if (!store) {
+      throw new NotFoundException(
+        `Supermercado con ID ${createProductDto.storeId} no encontrado o inactivo`,
+      );
+    }
+
     const existingProduct = await this.productsRepository.findOne({
       where: { sku: createProductDto.sku },
     });
@@ -106,6 +119,19 @@ export class ProductsService {
   async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
 
+    // Si se actualiza el storeId, validar que la nueva tienda exista
+    if (updateProductDto.storeId && updateProductDto.storeId !== product.storeId) {
+      const store = await this.storesRepository.findOne({
+        where: { id: updateProductDto.storeId, isActive: true },
+      });
+
+      if (!store) {
+        throw new NotFoundException(
+          `Supermercado con ID ${updateProductDto.storeId} no encontrado o inactivo`,
+        );
+      }
+    }
+
     if (updateProductDto.sku && updateProductDto.sku !== product.sku) {
       const existingProduct = await this.productsRepository.findOne({
         where: { sku: updateProductDto.sku },
@@ -115,7 +141,6 @@ export class ProductsService {
         throw new ConflictException(`El SKU ${updateProductDto.sku} ya está en uso`);
       }
     }
-
     Object.assign(product, updateProductDto);
     return this.productsRepository.save(product);
   }
@@ -133,7 +158,7 @@ export class ProductsService {
     }
   }
 
-    async adjustStock(
+  async adjustStock(
     id: string,
     quantity: number,
     type: 'add' | 'subtract' | 'set',
@@ -174,5 +199,4 @@ export class ProductsService {
       order: { stock: 'ASC' },
     }).then(products => products.filter(p => p.stock <= threshold));
   }
-
 }
