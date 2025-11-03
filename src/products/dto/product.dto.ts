@@ -16,7 +16,7 @@ export class CreateProductDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional({ example: 'Bebida refrescante de cola' })
+  @ApiPropertyOptional({ example: 'Bebida fría' })
   @IsOptional()
   @IsString()
   description?: string;

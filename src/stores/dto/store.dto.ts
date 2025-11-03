@@ -10,38 +10,38 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class CreateStoreDto {
-  @ApiProperty({ example: 'Supermercado Central' })
+  @ApiProperty({ example: 'Supermercado Central Madeirense' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'Av. Principal 123, Col. Centro' })
+  @ApiProperty({ example: 'Av. Soublette. Maiquetía' })
   @IsString()
   @IsNotEmpty()
   address: string;
 
-  @ApiPropertyOptional({ example: '+525512345678' })
+  @ApiPropertyOptional({ example: '+584141124458' })
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ example: 'Ciudad de México' })
+  @ApiPropertyOptional({ example: 'La Guaira' })
   @IsOptional()
   @IsString()
   city?: string;
 
-  @ApiPropertyOptional({ example: 'CDMX' })
+  @ApiPropertyOptional({ example: 'LG' })
   @IsOptional()
   @IsString()
   state?: string;
 
-  @ApiPropertyOptional({ example: 19.432608 })
+  @ApiPropertyOptional({ example: 10.587508 })
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
   latitude?: number;
 
-  @ApiPropertyOptional({ example: -99.133209 })
+  @ApiPropertyOptional({ example: -66.9213628 })
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
