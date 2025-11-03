@@ -246,13 +246,13 @@ Retorna información de un usuario específico.
 
 ```json
 {
-  "name": "Supermercado Central",
-  "address": "Av. Principal 123",
+  "name": "Supermercado Central Madeirense",
+  "address": "Av. Principal",
   "phone": "+525512345678",
-  "city": "Ciudad de México",
-  "state": "CDMX",
-  "latitude": 19.432608,
-  "longitude": -99.133209
+  "city": "La Guaira",
+  "state": "LG",
+  "latitude": 10.587508,
+  "longitude": -66.9213628
 }
 ```
 
@@ -373,7 +373,7 @@ Retorna información de un usuario específico.
 }
 ```
 
-**Qué hace:** Crea un nuevo producto asociado a un supermercado. Valida que el SKU sea único.
+**Qué hace:** Crea un nuevo producto asociado a un supermercado. Valida que el SKU sea único y que la tienda exista.
 
 #### `GET /api/v1/products?page=1&limit=10`
 **Listar todos los productos**
